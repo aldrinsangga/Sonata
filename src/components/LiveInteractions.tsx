@@ -7,14 +7,16 @@ import { Send, MessageSquare, Flame, Heart, HeartOff, Sparkles, ThumbsUp, PartyP
 import { motion, AnimatePresence } from 'motion/react';
 
 // Maps reaction identifier to actual render properties
-export const REACTION_TYPES: Record<string, { emoji: string; label: string; color: string; bg: string }> = {
-  love: { emoji: '❤️', label: 'Love', color: 'text-red-500', bg: 'bg-red-50 hover:bg-red-100 border-red-200 text-red-600' },
-  fire: { emoji: '🔥', label: 'Fire', color: 'text-orange-500', bg: 'bg-orange-50 hover:bg-orange-100 border-orange-200 text-orange-600' },
-  haha: { emoji: '😂', label: 'Haha', color: 'text-yellow-500', bg: 'bg-yellow-50 hover:bg-yellow-100 border-yellow-200 text-yellow-600' },
-  party: { emoji: '🎉', label: 'Party', color: 'text-purple-500', bg: 'bg-purple-50 hover:bg-purple-100 border-purple-200 text-purple-600' },
-  whoa: { emoji: '😮', label: 'Whoa', color: 'text-yellow-500', bg: 'bg-yellow-50 hover:bg-yellow-100 border-yellow-200 text-yellow-600' },
-  clap: { emoji: '👏', label: 'Clap', color: 'text-indigo-500', bg: 'bg-indigo-50 hover:bg-indigo-100 border-indigo-200 text-indigo-600' }
+export const REACTION_TYPES: Record<string, { emoji: string; label: string; color: string; bg: string; code: string }> = {
+  love: { emoji: '❤️', label: 'Love', color: 'text-red-500', bg: 'bg-red-50 hover:bg-red-100 border-red-200 text-red-600', code: '2764' },
+  fire: { emoji: '🔥', label: 'Fire', color: 'text-orange-500', bg: 'bg-orange-50 hover:bg-orange-100 border-orange-200 text-orange-600', code: '1f525' },
+  haha: { emoji: '😂', label: 'Haha', color: 'text-yellow-500', bg: 'bg-yellow-50 hover:bg-yellow-100 border-yellow-200 text-yellow-600', code: '1f602' },
+  party: { emoji: '🎉', label: 'Party', color: 'text-purple-500', bg: 'bg-purple-50 hover:bg-purple-100 border-purple-200 text-purple-600', code: '1f389' },
+  whoa: { emoji: '😮', label: 'Whoa', color: 'text-yellow-500', bg: 'bg-yellow-50 hover:bg-yellow-100 border-yellow-200 text-yellow-600', code: '1f62e' },
+  clap: { emoji: '👏', label: 'Clap', color: 'text-indigo-500', bg: 'bg-indigo-50 hover:bg-indigo-100 border-indigo-200 text-indigo-600', code: '1f44f' }
 };
+
+const getTwemojiUrl = (code: string) => `https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/svg/${code}.svg`;
 
 interface LiveInteractionsPanelProps {
   roomId: string;
@@ -148,10 +150,15 @@ export function LiveInteractionsPanel({ roomId, isSidebar = false }: LiveInterac
             <button
               key={type}
               onClick={() => handleSendReaction(type)}
-              className={`flex-1 py-1.5 rounded-xl border flex items-center justify-center text-lg transition-transform hover:scale-125 active:scale-95 shadow-sm ${item.bg}`}
+              className={`flex-1 py-1.5 rounded-xl border flex items-center justify-center transition-transform hover:scale-125 active:scale-95 shadow-sm ${item.bg}`}
               title={`React with ${item.label}`}
             >
-              {item.emoji}
+              <img 
+                src={getTwemojiUrl(item.code)} 
+                alt={item.emoji} 
+                className="w-5 h-5 sm:w-6 sm:h-6 pointer-events-none"
+                referrerPolicy="no-referrer"
+              />
             </button>
           ))}
         </div>
@@ -316,13 +323,19 @@ export function LivePlayerOverlay({ roomId }: { roomId: string }) {
                   duration: 4 * reaction.speedMultiplier,
                   ease: [0.1, 0.6, 0.3, 1], // customized spring-like physics deceleration curve
                 }}
-                className="absolute bottom-0 text-3xl font-display flex flex-col items-center select-none"
+                className="absolute bottom-0 flex flex-col items-center select-none"
                 style={{ originX: 0.5, originY: 0.5 }}
               >
                 {/* Visual Bubble with delicate drop shadow & organic tilt */}
-                <div className="filter drop-shadow-[0_4px_8px_rgba(0,0,0,0.35)] relative">
-                  {definition.emoji}
-                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-black/80 text-[7px] text-white px-1 py-[1px] rounded font-bold scale-75 border border-white/15 opacity-80 max-w-[40px] truncate">
+                <div className="relative group">
+                  <div className="absolute inset-0 bg-white/20 blur-xl rounded-full scale-150 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <img 
+                    src={getTwemojiUrl(definition.code)} 
+                    alt={definition.emoji}
+                    className="w-12 h-12 sm:w-16 sm:h-16 filter drop-shadow-[0_8px_16px_rgba(0,0,0,0.5)]"
+                    referrerPolicy="no-referrer"
+                  />
+                  <span className="absolute -top-4 left-1/2 -translate-x-1/2 bg-black/85 backdrop-blur-sm text-[8px] sm:text-[10px] text-white px-2 py-0.5 rounded-full font-bold border border-white/20 shadow-xl whitespace-nowrap">
                     {reaction.senderName}
                   </span>
                 </div>

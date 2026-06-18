@@ -15,7 +15,7 @@ import { Footer } from '../components/Footer';
 import { SLogo } from '../components/SLogo';
 import { getRoomByCode } from '../lib/roomService';
 import { LiveInteractionsPanel } from '../components/LiveInteractions';
-import { Settings as SettingsIcon, Monitor, QrCode, User, Share2 } from 'lucide-react';
+import { Settings as SettingsIcon, Monitor, QrCode, User, Share2, LogOut } from 'lucide-react';
 import { motion } from 'motion/react';
 import { usePWAInstall } from '../components/PWAInstallProvider';
 
@@ -154,11 +154,20 @@ export default function RoomPage() {
                       <p className="text-sm font-bold text-black">{nickname}</p>
                     </div>
                   </div>
-                  {isHost && (
-                    <span className="px-2 py-0.5 bg-[#ff0000]/10 text-[#ff0000] text-[9px] font-bold uppercase rounded border border-[#ff0000]/20">
-                      Host
-                    </span>
-                  )}
+                  <div className="flex items-center gap-2">
+                    {isHost && (
+                      <span className="px-2 py-0.5 bg-[#ff0000]/10 text-[#ff0000] text-[9px] font-bold uppercase rounded border border-[#ff0000]/20">
+                        Host
+                      </span>
+                    )}
+                    <button 
+                      onClick={() => navigate('/')}
+                      className="flex items-center gap-1.5 px-3 py-1.5 bg-red-50 hover:bg-red-100 text-[#ff0000] rounded-xl transition-colors border border-red-100"
+                    >
+                      <LogOut className="w-3.5 h-3.5" />
+                      <span className="text-[10px] font-bold uppercase tracking-wider">Leave</span>
+                    </button>
+                  </div>
                 </div>
 
                 {/* Content Stack */}
