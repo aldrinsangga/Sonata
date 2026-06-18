@@ -31,7 +31,6 @@ RUN npm install --omit=dev
 
 # Copy the built files from the builder stage
 COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/public ./public
 
 # Expose the port (always 3000 in this environment)
 EXPOSE 3000
