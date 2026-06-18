@@ -1,0 +1,108 @@
+{
+  "entities": {
+    "Room": {
+      "title": "Room",
+      "description": "A karaoke room",
+      "type": "object",
+      "properties": {
+        "roomName": { "type": "string" },
+        "roomCode": { "type": "string" },
+        "hostNickname": { "type": "string" },
+        "hostEmoji": { "type": "string" },
+        "createdAt": { "type": "number" },
+        "status": { "type": "string", "enum": ["active", "ended"] }
+      },
+      "required": ["roomName", "roomCode", "createdAt", "status"]
+    },
+    "Participant": {
+      "title": "Participant",
+      "description": "A user in the room",
+      "type": "object",
+      "properties": {
+        "nickname": { "type": "string" },
+        "emoji": { "type": "string" },
+        "role": { "type": "string", "enum": ["host", "guest"] },
+        "joinedAt": { "type": "number" },
+        "lastSeen": { "type": "number" }
+      },
+      "required": ["nickname", "role", "joinedAt", "lastSeen"]
+    },
+    "QueueItem": {
+      "title": "QueueItem",
+      "description": "A song in the queue",
+      "type": "object",
+      "properties": {
+        "videoId": { "type": "string" },
+        "title": { "type": "string" },
+        "channel": { "type": "string" },
+        "thumbnail": { "type": "string" },
+        "duration": { "type": "string" },
+        "addedBy": { "type": "string" },
+        "addedAt": { "type": "number" },
+        "status": { "type": "string", "enum": ["pending", "playing", "played"] }
+      },
+      "required": ["videoId", "title", "status"]
+    },
+    "PlaybackState": {
+      "title": "PlaybackState",
+      "description": "Playback state of the room",
+      "type": "object",
+      "properties": {
+        "currentVideoId": { "type": "string" },
+        "isPlaying": { "type": "boolean" },
+        "currentTime": { "type": "number" },
+        "updatedAt": { "type": "number" }
+      }
+    },
+    "LiveComment": {
+      "title": "LiveComment",
+      "description": "Real-time user commentary",
+      "type": "object",
+      "properties": {
+        "senderName": { "type": "string" },
+        "text": { "type": "string" },
+        "createdAt": { "type": "number" },
+        "role": { "type": "string", "enum": ["host", "guest"] }
+      },
+      "required": ["senderName", "text", "createdAt", "role"]
+    },
+    "LiveReaction": {
+      "title": "LiveReaction",
+      "description": "Real-time emoji reaction bubble",
+      "type": "object",
+      "properties": {
+        "type": { "type": "string" },
+        "senderName": { "type": "string" },
+        "createdAt": { "type": "number" },
+        "xOffset": { "type": "number" }
+      },
+      "required": ["type", "senderName", "createdAt", "xOffset"]
+    }
+  },
+  "firestore": {
+    "/rooms/{roomId}": {
+      "schema": "Room",
+      "description": "The main room document"
+    },
+    "/rooms/{roomId}/participants/{participantId}": {
+      "schema": "Participant",
+      "description": "Participants in the room"
+    },
+    "/rooms/{roomId}/queue/{queueId}": {
+      "schema": "QueueItem",
+      "description": "The song queue for the room"
+    },
+    "/rooms/{roomId}/playbackState/{docId}": {
+      "schema": "PlaybackState",
+      "description": "The playback state"
+    },
+    "/rooms/{roomId}/comments/{commentId}": {
+      "schema": "LiveComment",
+      "description": "Live chat/commentary messages"
+    },
+    "/rooms/{roomId}/reactions/{reactionId}": {
+      "schema": "LiveReaction",
+      "description": "Floating emoji reaction signals"
+    }
+  }
+}

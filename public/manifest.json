@@ -1,0 +1,10 @@
+{
+  "name": "Sonara Karaoke Engine",
+  "short_name": "Sonara",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#0B0B0B",
+  "theme_color": "#0F3D2E",
+  "description": "Real-time collaborative karaoke room application.",
+  "icons": []
+}

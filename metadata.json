@@ -1,0 +1,6 @@
+{
+  "name": "Sonata",
+  "description": "Multiplayer karaoke application with shared YouTube video synchronization and queues.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
