@@ -1,5 +1,6 @@
 import React from 'react';
 import { Facebook, Twitter, Mail, MessageCircle, Link2, Check } from 'lucide-react';
+import { useAppStore } from '../store';
 
 interface SocialShareProps {
   roomLink: string;
@@ -32,12 +33,14 @@ export const SocialShare: React.FC<SocialShareProps> = ({ roomLink }) => {
   ];
 
   const [copied, setCopied] = React.useState(false);
+  const { addToast } = useAppStore();
 
   const copyToClipboard = () => {
     try {
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(roomLink).then(() => {
           setCopied(true);
+          addToast("Room link copied to clipboard!");
           setTimeout(() => setCopied(false), 2000);
         }).catch(() => {
           fallbackCopy();
@@ -64,9 +67,11 @@ export const SocialShare: React.FC<SocialShareProps> = ({ roomLink }) => {
       document.execCommand('copy');
       document.body.removeChild(textArea);
       setCopied(true);
+      addToast("Room link copied to clipboard!");
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
       console.warn("Fallback copy failed:", err);
+      addToast("Failed to copy link", "error");
     }
   };
 

@@ -2,6 +2,12 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { Room, Participant, QueueItem, PlaybackState } from '../lib/types';
 
+export interface ToastMessage {
+  id: string;
+  message: string;
+  type?: 'success' | 'info' | 'error';
+}
+
 interface AppState {
   userId: string;
   nickname: string;
@@ -27,6 +33,11 @@ interface AppState {
   
   playbackState: PlaybackState | null;
   setPlaybackState: (p: PlaybackState | null) => void;
+
+  // UI state
+  toasts: ToastMessage[];
+  addToast: (message: string, type?: 'success' | 'info' | 'error') => void;
+  removeToast: (id: string) => void;
 }
 
 export const useAppStore = create<AppState>()(
@@ -54,6 +65,16 @@ export const useAppStore = create<AppState>()(
 
       playbackState: null,
       setPlaybackState: (playbackState) => set({ playbackState }),
+
+      toasts: [],
+      addToast: (message, type = 'success') => {
+        const id = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : Math.random().toString(36).substring(2, 15);
+        set((state) => ({ toasts: [...state.toasts, { id, message, type }] }));
+        setTimeout(() => {
+          set((state) => ({ toasts: state.toasts.filter(t => t.id !== id) }));
+        }, 4000); // clear after 4s
+      },
+      removeToast: (id) => set((state) => ({ toasts: state.toasts.filter(t => t.id !== id) })),
     }),
     {
       name: 'sonata-storage-v1',

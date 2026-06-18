@@ -28,8 +28,13 @@ export default function PWAInstallProvider({ children }: { children: React.React
   const [installSuccess, setInstallSuccess] = useState(false);
 
   useEffect(() => {
-    // 1. Detect if inside an iframe
-    const inIframe = window.self !== window.top;
+    // 1. Detect if inside an iframe safely
+    let inIframe = false;
+    try {
+      inIframe = window.self !== window.top;
+    } catch (e) {
+      inIframe = true;
+    }
     setIsInIframe(inIframe);
 
     // 2. Register Service Worker to meet PWA requirements
@@ -45,10 +50,10 @@ export default function PWAInstallProvider({ children }: { children: React.React
       });
     }
 
-    // 3. Detect if already installed / running in standalone mode
+    // 3. Detect if already installed / running in standalone mode safely
     const checkIsInstalled = () => {
       const isStandalone = 
-        window.matchMedia('(display-mode: standalone)').matches || 
+        (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || 
         (navigator as any).standalone || 
         document.referrer.includes('android-app://');
       setIsInstalled(!!isStandalone);
@@ -68,19 +73,31 @@ export default function PWAInstallProvider({ children }: { children: React.React
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
 
     // Also check if display-mode matches standalone later
-    const mediaQuery = window.matchMedia('(display-mode: standalone)');
-    const handleMediaChange = (e: MediaQueryListEvent) => {
-      setIsInstalled(e.matches);
+    let mediaQuery: MediaQueryList | null = null;
+    const handleMediaChange = (e: MediaQueryListEvent | Event) => {
+      if ('matches' in e) {
+        setIsInstalled((e as MediaQueryListEvent).matches);
+      }
     };
     
-    if (mediaQuery.addEventListener) {
-      mediaQuery.addEventListener('change', handleMediaChange);
+    if (window.matchMedia) {
+      mediaQuery = window.matchMedia('(display-mode: standalone)');
+      if (mediaQuery.addEventListener) {
+        mediaQuery.addEventListener('change', handleMediaChange);
+      } else if ('addListener' in mediaQuery) {
+        // Fallback for older browsers like older Smart TVs or old Safari
+        (mediaQuery as any).addListener(handleMediaChange);
+      }
     }
 
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-      if (mediaQuery.removeEventListener) {
-        mediaQuery.removeEventListener('change', handleMediaChange);
+      if (mediaQuery) {
+        if (mediaQuery.removeEventListener) {
+          mediaQuery.removeEventListener('change', handleMediaChange);
+        } else if ('removeListener' in mediaQuery) {
+          (mediaQuery as any).removeListener(handleMediaChange);
+        }
       }
     };
   }, []);
@@ -209,6 +226,20 @@ export default function PWAInstallProvider({ children }: { children: React.React
                           <li>Look for <strong className="text-blue-800">"Install App"</strong> or <strong className="text-blue-800">"Add to Home screen"</strong>.</li>
                           <li>Alternatively, look for the install icon <Monitor className="inline w-3.5 h-3.5 text-blue-800 mx-0.5" /> in the address bar.</li>
                           <li>Confirm the installation prompt.</li>
+                        </ol>
+                      </div>
+
+                      {/* Smart TV Instructions */}
+                      <div className="p-4 border border-gray-150 rounded-2xl bg-purple-50 space-y-3 md:col-span-2">
+                        <div className="flex items-center gap-2 text-purple-800">
+                          <Monitor className="w-5 h-5" />
+                          <span className="font-extrabold text-xs uppercase tracking-wider">Smart TV (Samsung / LG / Android TV)</span>
+                        </div>
+                        <ol className="list-decimal pl-4 text-xs text-gray-600 space-y-1.5 leading-relaxed">
+                          <li>Open the TV's built-in <strong className="text-purple-800">Web Browser</strong>.</li>
+                          <li>Press your remote's <strong className="text-purple-800">Options / Menu</strong> button.</li>
+                          <li>Select <strong className="text-purple-800">"Bookmark"</strong> or <strong className="text-purple-800">"Pin to Home"</strong> (if supported by your TV).</li>
+                          <li className="text-purple-600 mt-1 italic">Note: If your TV browser does not support pinning, simply keep Sonata in your bookmarks.</li>
                         </ol>
                       </div>
                     </div>

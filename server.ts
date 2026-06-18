@@ -79,6 +79,15 @@ const oembedCache = new Map<string, CacheEntry<boolean>>();
 
 const CACHE_DURATION_SEARCH = 30 * 60 * 1000; // 30 minutes
 const CACHE_DURATION_OEMBED = 60 * 60 * 1000; // 1 hour
+const MAX_CACHE_SIZE = 1000;
+
+function setCache<T>(cache: Map<string, CacheEntry<T>>, key: string, value: T, duration: number) {
+  if (cache.size >= MAX_CACHE_SIZE) {
+    const firstKey = cache.keys().next().value;
+    if (firstKey !== undefined) cache.delete(firstKey);
+  }
+  cache.set(key, { data: value, expiry: Date.now() + duration });
+}
 
 // Check with fallback to avoid starvation due to oembed rate limits and cache results for ultimate speeds
 async function checkEmbeddableWithFallback(videoPool: any[]): Promise<any[]> {
@@ -109,14 +118,14 @@ async function checkEmbeddableWithFallback(videoPool: any[]): Promise<any[]> {
 
         if (oembedRes.status === 200) {
           // Explicitly verified as embeddable
-          oembedCache.set(v.videoId, { data: true, expiry: Date.now() + CACHE_DURATION_OEMBED });
+          setCache(oembedCache, v.videoId, true, CACHE_DURATION_OEMBED);
           return v;
         } else if (oembedRes.status === 429) {
           // Rate-limited: keep as fallback since it passed String filter, but don't cache
           return v;
         } else {
           // Blocked, unauthorized, or deleted (400, 401, 403, 404, etc.)
-          oembedCache.set(v.videoId, { data: false, expiry: Date.now() + CACHE_DURATION_OEMBED });
+          setCache(oembedCache, v.videoId, false, CACHE_DURATION_OEMBED);
           return null;
         }
       } catch (err) {
@@ -165,7 +174,7 @@ app.get("/api/search", async (req, res) => {
     }));
 
     // Save to Cache
-    searchCache.set(query, { data: videos, expiry: Date.now() + CACHE_DURATION_SEARCH });
+    setCache(searchCache, query, videos, CACHE_DURATION_SEARCH);
 
     res.json({ results: videos });
   } catch (error) {
@@ -361,7 +370,7 @@ app.get("/api/recommendations", async (req, res) => {
           const r = await yts(query);
           const videos = r.videos || [];
           // Save cache for individual sub-query as well
-          searchCache.set(query, { data: videos, expiry: Date.now() + CACHE_DURATION_SEARCH });
+          setCache(searchCache, query, videos, CACHE_DURATION_SEARCH);
           return videos;
         } catch (e) {
           return [];

@@ -33,7 +33,7 @@ export interface QueueItem {
   duration: string;
   seconds: number;
   addedBy: string;
-  status: 'pending' | 'played';
+  status: 'pending' | 'playing' | 'played';
   createdAt: number;
 }
 

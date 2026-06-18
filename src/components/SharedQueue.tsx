@@ -7,11 +7,10 @@ import { Trash2, GripVertical, Music } from 'lucide-react';
 export default function SharedQueue({ roomId }: { roomId: string }) {
   const { queue, isHost, currentRoom, playbackState } = useAppStore();
 
-  const pendingQueue = queue.filter(q => q.status === 'pending');
-  const nowPlaying = queue.find(q => q.videoId === playbackState?.currentVideoId && q.status === 'pending');
+  const activeQueue = queue.filter(q => q.status === 'pending' || q.status === 'playing');
+  const nowPlaying = queue.find(q => q.videoId === playbackState?.currentVideoId && q.status === 'playing');
   
-  // Note: we're visually marking the one playing, but logic-wise, 
-  // onEnd marks it played and we pick the next. So nowPlaying might be the first pending.
+  // Note: we're visually marking the one playing
 
   const handleRemove = async (queueId: string) => {
     if (!isHost) return;
@@ -26,12 +25,12 @@ export default function SharedQueue({ roomId }: { roomId: string }) {
     <div className="flex flex-col border-b border-gray-200 bg-white">
       <div className="px-4 py-2 bg-gray-50/50 flex items-center justify-between shrink-0 border-b border-gray-200">
         <span className="text-xs font-bold uppercase tracking-widest text-[#ff0000]">SHARED QUEUE</span>
-        <span className="text-[10px] text-gray-500 font-bold">{pendingQueue.length} / {currentRoom?.settings?.queueLimit || 50} SONGS</span>
+        <span className="text-[10px] text-gray-500 font-bold">{activeQueue.length} / {currentRoom?.settings?.queueLimit || 50} SONGS</span>
       </div>
       
       <div className="max-h-[600px] overflow-y-auto px-4 py-4 space-y-2 custom-scrollbar">
-        {pendingQueue.map((item, index) => {
-           const isPlaying = playbackState?.currentVideoId === item.videoId && index === 0;
+        {activeQueue.map((item, index) => {
+           const isPlaying = playbackState?.currentVideoId === item.videoId && item.status === 'playing';
 
            if (isPlaying) {
              return (
@@ -98,7 +97,7 @@ export default function SharedQueue({ roomId }: { roomId: string }) {
            );
         })}
 
-        {pendingQueue.length === 0 && (
+        {activeQueue.length === 0 && (
           <div className="text-center py-8 text-gray-400 text-xs font-bold uppercase tracking-widest">
             Queue is empty
           </div>

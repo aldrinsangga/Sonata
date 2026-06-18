@@ -101,7 +101,7 @@ export default function RoomPage() {
                 <SLogo className="w-4 h-4 text-black" />
               </div>
               <div className="flex flex-col">
-                <h1 className="text-xl font-display font-black tracking-tighter text-white leading-none">SONATA</h1>
+                <h1 className="text-xl font-serif font-bold tracking-wider text-white leading-none">SONATA</h1>
                 {isDisplayDevice && (
                   <div className="flex items-center gap-1 text-[9px] text-white/70 font-bold uppercase tracking-wider mt-0.5">
                     <Monitor className="w-2 h-2" />
@@ -136,7 +136,7 @@ export default function RoomPage() {
           </header>
 
           {/* White spacing below the header */}
-          <div className="h-4 bg-white border-b border-gray-100 shrink-0 select-none" />
+          <div className="h-[6px] bg-white border-b border-gray-100 shrink-0 select-none" />
 
           <main className="flex-1 flex flex-col lg:flex-row overflow-hidden">
             {/* Desktop Left / Mobile Main Stack */}
@@ -161,21 +161,23 @@ export default function RoomPage() {
                   )}
                 </div>
 
-                {/* Player - ONLY if display device */}
-                {isDisplayDevice && (
-                  <div className="shrink-0 bg-black">
-                    <AppYoutubePlayer roomId={actualRoomId} isTheater={isTheater} onToggleTheater={() => setIsTheater(t => !t)} />
-                  </div>
-                )}
-
                 {/* Content Stack */}
-                <div className="flex flex-col gap-6 pb-20">
-                  {/* Search Section */}
-                  {!isTheater && (
-                    <div className="bg-white lg:bg-transparent px-0 lg:px-0">
-                      <SongSearch roomId={actualRoomId} />
-                    </div>
-                  )}
+                <div className="flex flex-col gap-6 pb-20 lg:pt-0">
+                  <div className="flex flex-col gap-[10px]">
+                    {/* Search Section */}
+                    {!isTheater && (
+                      <div className="bg-white lg:bg-transparent px-0 lg:px-0 pt-0 pb-0">
+                        <SongSearch roomId={actualRoomId} layoutMode="search" />
+                      </div>
+                    )}
+
+                    {/* Player - ONLY if display device */}
+                    {isDisplayDevice && (
+                      <div className="shrink-0 bg-black">
+                        <AppYoutubePlayer roomId={actualRoomId} isTheater={isTheater} onToggleTheater={() => setIsTheater(t => !t)} />
+                      </div>
+                    )}
+                  </div>
 
                   {/* Mobile Only: Shared Queue & Participants */}
                   <div className="lg:hidden flex flex-col gap-6 px-4">
@@ -188,7 +190,24 @@ export default function RoomPage() {
                     <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden p-1">
                       <ParticipantList />
                     </div>
+                  </div>
 
+                  {/* Desktop Only: Recommendations */}
+                  <div className="hidden lg:block lg:bg-transparent lg:px-0 lg:py-0">
+                    {!isTheater && (
+                      <SongSearch roomId={actualRoomId} layoutMode="recommendations" />
+                    )}
+                  </div>
+
+                  {/* Mobile Only: recommendations, social share, install, footer */}
+                  <div className="lg:hidden flex flex-col gap-6 px-[14px]">
+                    {/* Recommendations */}
+                    {!isTheater && (
+                      <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden pb-4 pt-1">
+                        <SongSearch roomId={actualRoomId} layoutMode="recommendations" />
+                      </div>
+                    )}
+                    
                     {/* Social Share Icons */}
                     <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
                       <SocialShare roomLink={roomLink} />

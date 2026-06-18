@@ -11,7 +11,7 @@ import { LiveInteractionsPanel } from './LiveInteractions';
 import { usePWAInstall } from './PWAInstallProvider';
 
 export default function RoomSidebar({ roomId }: { roomId: string }) {
-  const { currentRoom, isHost, queue, participants } = useAppStore();
+  const { currentRoom, isHost, queue, participants, addToast } = useAppStore();
   const [copied, setCopied] = useState(false);
   const [activeTab, setActiveTab] = useState<'queue' | 'chat' | 'people'>('queue');
   const navigate = useNavigate();
@@ -20,9 +20,14 @@ export default function RoomSidebar({ roomId }: { roomId: string }) {
   const roomLink = window.location.origin + `/room/${currentRoom?.roomCode || roomId}`;
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(roomLink);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    navigator.clipboard.writeText(roomLink).then(() => {
+      setCopied(true);
+      addToast("Room link copied to clipboard!");
+      setTimeout(() => setCopied(false), 2000);
+    }).catch((err) => {
+      console.error(err);
+      addToast("Failed to copy link", "error");
+    });
   };
 
   const leaveRoom = () => {

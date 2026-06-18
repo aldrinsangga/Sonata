@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import YouTube, { YouTubeProps, YouTubePlayer } from 'react-youtube';
 import { useAppStore } from '../store';
-import { doc, updateDoc, setDoc, collection } from 'firebase/firestore';
+import { doc, updateDoc, setDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { PlaybackState } from '../lib/types';
 import { Play, Pause, SkipForward, Maximize, Music, Sparkles } from 'lucide-react';
@@ -260,9 +260,9 @@ export default function AppYoutubePlayer({ roomId, isTheater, onToggleTheater }:
           updatedAt: Date.now()
         }).catch(console.error);
 
-        // Mark as played
+        // Mark as playing
         const qRef = doc(db, `rooms/${roomId}/queue`, nextVideo.id);
-        updateDoc(qRef, { status: 'played' }).catch(console.error);
+        updateDoc(qRef, { status: 'playing' }).catch(console.error);
       }
     }
   }, [queue, currentVideoId, isHost, roomId]);
@@ -354,6 +354,13 @@ export default function AppYoutubePlayer({ roomId, isTheater, onToggleTheater }:
 
   const onEnd: YouTubeProps['onEnd'] = async () => {
      if (isHost) {
+        // Find and delete the currently playing video from the queue to cap database size
+        const currentQueueItem = queue.find(q => q.videoId === currentVideoId && q.status === 'playing');
+        if (currentQueueItem) {
+          const currentRef = doc(db, `rooms/${roomId}/queue`, currentQueueItem.id);
+          deleteDoc(currentRef).catch(console.error);
+        }
+
         // Find next video in queue
         const pendingQueue = queue.filter(q => q.status === 'pending');
         if (pendingQueue.length > 0) {
@@ -368,9 +375,9 @@ export default function AppYoutubePlayer({ roomId, isTheater, onToggleTheater }:
              updatedAt: Date.now()
            });
 
-           // Mark as played
+           // Mark as playing
            const qRef = doc(db, `rooms/${roomId}/queue`, nextVideo.id);
-           await updateDoc(qRef, { status: 'played' });
+           await updateDoc(qRef, { status: 'playing' });
         } else {
            const ref = doc(db, `rooms/${roomId}/playbackState`, 'current');
            await updateDoc(ref, {

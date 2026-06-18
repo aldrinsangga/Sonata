@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Users, Music, Settings, ArrowRight, QrCode } from 'lucide-react';
+import { Users, Settings, ArrowRight, QrCode } from 'lucide-react';
 import { SLogo } from '../components/SLogo';
 import { Footer } from '../components/Footer';
 import { createRoom, getRoomByCode, joinRoomParticipant } from '../lib/roomService';
@@ -70,12 +70,12 @@ export default function LandingPage() {
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-16 flex flex-col items-center"
+          className="text-center mb-16 flex flex-col items-center pt-[60px]"
         >
           <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-[#ff0000] flex items-center justify-center shadow-2xl shadow-[#ff0000]/40 mb-6">
             <SLogo className="w-8 h-8 sm:w-10 sm:h-10 text-accent" />
           </div>
-          <h1 className="text-4xl sm:text-6xl font-display font-black tracking-tighter mb-3 text-white uppercase">
+          <h1 className="text-5xl sm:text-7xl font-serif font-bold tracking-wider mb-3 text-white uppercase">
             SONATA
           </h1>
           <p className="text-base sm:text-lg text-champagne/70 max-w-2xl mx-auto">
@@ -95,41 +95,41 @@ export default function LandingPage() {
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.1 }}
-            className="bg-[#ff0000] rounded-3xl p-8 flex flex-col items-center text-center hover:bg-[#cc0000] transition-colors shadow-xl shadow-[#ff0000]/20"
+            className="bg-[#ff0000] rounded-3xl p-5 flex flex-col items-center text-center hover:bg-[#cc0000] transition-colors shadow-xl shadow-[#ff0000]/20 min-h-[220px]"
           >
-            <div className="w-16 h-16 rounded-2xl bg-white/20 flex items-center justify-center mb-6">
-              <Users className="w-8 h-8 text-white" />
+            <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center mb-3">
+              <Users className="w-5 h-5 text-white" />
             </div>
-            <h3 className="text-2xl font-display font-bold mb-3 text-white">Host a Room</h3>
-            <p className="text-white/80 mb-8">Create a new karaoke room and invite your friends via link or QR code.</p>
+            <h3 className="text-xl font-display font-bold mb-1 text-white">Host a Room</h3>
+            <p className="text-white/80 mb-4 text-xs max-w-[280px]">Create a new karaoke room and invite your friends via link or QR code.</p>
             
             {!showCreatePrompt ? (
                <button 
                 onClick={() => setShowCreatePrompt(true)}
-                className="mt-auto w-full py-4 px-6 rounded-xl bg-white text-[#ff0000] font-bold text-lg hover:bg-white/90 transition-colors shadow-lg flex flex-row items-center justify-center gap-2"
+                className="mt-auto w-full py-2.5 px-4 rounded-xl bg-white text-[#ff0000] font-bold text-sm hover:bg-white/90 transition-colors shadow-lg flex flex-row items-center justify-center gap-2"
               >
                 Create New Room
-                <ArrowRight className="w-5 h-5" />
+                <ArrowRight className="w-4 h-4" />
               </button>
             ) : (
-              <form onSubmit={handleCreateRoom} className="mt-auto w-full flex flex-col gap-3">
+              <form onSubmit={handleCreateRoom} className="mt-auto w-full flex flex-col gap-2">
                 <input 
                   type="text" 
                   required
                   placeholder="Your Nickname" 
                   value={nicknameInput}
                   onChange={(e) => setNicknameInput(e.target.value)}
-                  className="w-full py-4 px-6 rounded-xl bg-black/20 border border-white/20 text-center text-xl focus:outline-none focus:border-white text-white placeholder:text-white/50"
+                  className="w-full py-2.5 px-4 rounded-xl bg-black/20 border border-white/20 text-center text-sm focus:outline-none focus:border-white text-white placeholder:text-white/50"
                   maxLength={20}
                   autoFocus
                 />
                 <button 
                   type="submit"
                   disabled={isCreating || !nicknameInput.trim()}
-                  className="w-full py-4 px-6 rounded-xl bg-white text-[#ff0000] font-bold text-lg hover:bg-white/90 transition-colors disabled:opacity-50 flex flex-row items-center justify-center gap-2"
+                  className="w-full py-2.5 px-4 rounded-xl bg-white text-[#ff0000] font-bold text-sm hover:bg-white/90 transition-colors disabled:opacity-50 flex flex-row items-center justify-center gap-2"
                 >
                   {isCreating ? 'Creating...' : 'Start Party'}
-                  <ArrowRight className="w-5 h-5" />
+                  <ArrowRight className="w-4 h-4" />
                 </button>
               </form>
             )}
@@ -140,27 +140,24 @@ export default function LandingPage() {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.2 }}
-            className="bg-[#111111] border border-white/10 rounded-3xl p-8 flex flex-col items-center text-center hover:bg-[#151515] transition-colors shadow-xl"
+            className="bg-[#111111] border border-white/10 rounded-3xl p-5 flex flex-col items-center text-center hover:bg-[#151515] transition-colors shadow-xl min-h-[220px]"
           >
-            <div className="w-16 h-16 rounded-2xl bg-[#ff0000]/10 flex items-center justify-center mb-6">
-              <Music className="w-8 h-8 text-[#ff0000]" />
-            </div>
-            <h3 className="text-2xl font-display font-bold mb-3">Join a Room</h3>
-            <p className="text-champagne/60 mb-8">Enter a room code below to jump right into the party.</p>
+            <h3 className="text-xl font-display font-bold mb-1">Join a Room</h3>
+            <p className="text-champagne/60 mb-4 text-xs max-w-[280px]">Enter a room code below to jump right into the party.</p>
             
-            <form onSubmit={handleJoinRoom} className="mt-auto w-full flex flex-col gap-3">
+            <form onSubmit={handleJoinRoom} className="mt-auto w-full flex flex-col gap-2">
               <input 
                 type="text" 
                 placeholder="Enter Room Code" 
                 value={joinCode}
                 onChange={(e) => setJoinCode(e.target.value)}
-                className="w-full py-4 px-6 rounded-xl bg-black border border-white/20 text-center text-xl uppercase tracking-widest focus:outline-none focus:border-[#ff0000] font-mono placeholder:normal-case placeholder:tracking-normal placeholder:text-lg text-champagne"
+                className="w-full py-2.5 px-4 rounded-xl bg-black border border-white/20 text-center text-sm uppercase tracking-widest focus:outline-none focus:border-[#ff0000] font-mono placeholder:normal-case placeholder:tracking-normal placeholder:text-sm text-champagne"
                 maxLength={6}
               />
               <button 
                 type="submit"
                 disabled={isJoining || joinCode.length < 3}
-                className="w-full py-4 px-6 rounded-xl bg-[#ff0000] text-white font-bold text-lg hover:bg-[#cc0000] transition-colors disabled:opacity-50 flex flex-row items-center justify-center gap-2"
+                className="w-full py-2.5 px-4 rounded-xl bg-[#ff0000] text-white font-bold text-sm hover:bg-[#cc0000] transition-colors disabled:opacity-50 flex flex-row items-center justify-center gap-2"
               >
                 {isJoining ? 'Joining...' : 'Join Room'}
               </button>

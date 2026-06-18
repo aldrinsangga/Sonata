@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Search, Plus, Loader2, RefreshCw } from 'lucide-react';
+import { Search, Plus, Loader2, RefreshCw, X } from 'lucide-react';
 import { doc, setDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { useAppStore } from '../store';
@@ -8,7 +8,7 @@ import { GENRE_DATA, SugSong } from '../data/genreSongs';
 import { motion } from 'motion/react';
 import { identifySongTags } from '../lib/genreTagging';
 
-export default function SongSearch({ roomId }: { roomId: string }) {
+export default function SongSearch({ roomId, layoutMode = 'all' }: { roomId: string; layoutMode?: 'all' | 'search' | 'recommendations' }) {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<any[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -81,6 +81,7 @@ export default function SongSearch({ roomId }: { roomId: string }) {
   };
 
   const [addingMap, setAddingMap] = useState<Record<string, 'idle' | 'loading' | 'success'>>({});
+  const { addToast } = useAppStore();
 
   const handleAdd = async (video: any) => {
     if (addingMap[video.videoId] === 'loading' || addingMap[video.videoId] === 'success') {
@@ -108,104 +109,132 @@ export default function SongSearch({ roomId }: { roomId: string }) {
       }, 4000); // UI feedback for 4 seconds to prevent double additions
     } catch (err) {
       console.error(err);
+      addToast("Failed to add song", "error");
       setAddingMap(prev => ({ ...prev, [video.videoId]: 'idle' }));
     }
   };
 
   return (
-    <div className="flex-1 bg-white p-4 lg:p-6 border-b lg:border-b-0 border-gray-200 flex flex-col min-h-[400px]">
+    <div className={`flex-1 bg-white ${layoutMode === 'all' ? 'p-4 lg:p-6 border-b lg:border-b-0 border-gray-200 flex flex-col min-h-[400px]' : 'flex flex-col'}`}>
       
-      {/* Search form */}
-      <form onSubmit={handleSearch} className="relative flex items-center mb-6 shrink-0 z-10 w-full">
-        <input 
-          type="text"
-          placeholder="Search for karaoke songs..."
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          className="w-full bg-white border border-gray-300 rounded-full py-2.5 pl-12 pr-28 focus:outline-none focus:border-[#ff0000] text-sm text-black placeholder:text-gray-500"
-        />
-        <Search className="absolute left-4 w-4 h-4 text-gray-400" />
-        <button 
-          type="submit"
-          className="absolute right-2 top-1/2 -translate-y-1/2 py-1.5 px-4 bg-[#ff0000] text-white rounded-full font-bold text-xs uppercase tracking-wider hover:bg-[#cc0000] transition-colors flex items-center justify-center disabled:opacity-50"
-          disabled={isSearching}
-        >
-          {isSearching ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Search'}
-        </button>
-      </form>
-
-      {/* Dynamic Results vs Standard Header */}
-      <div className="flex items-center justify-between mb-4 shrink-0">
-        <h3 className="text-xs font-bold uppercase tracking-widest text-gray-500">
-           {query && !isSearching ? `Search Results for "${query}"` : 'Search Results'}
-        </h3>
-        {results.length > 0 && <span className="text-[10px] text-gray-500 font-mono">{results.length} tracks matched</span>}
-      </div>
-
-      <div className="flex-1 flex flex-col pr-1 overflow-y-auto custom-scrollbar">
-        {/* Searched Results List */}
-        {results.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pb-6 border-b border-gray-150 mb-8">
-            {results.map((video) => (
-              <div 
-                key={video.videoId} 
-                className={`flex gap-3 p-2 rounded-xl border transition-all cursor-pointer group ${
-                  addingMap[video.videoId] === 'success'
-                    ? 'bg-green-50 border-green-300 hover:border-green-400'
-                    : 'bg-gray-50 border-gray-200 hover:border-[#ff0000]/50'
-                }`} 
-                onClick={() => handleAdd(video)}
+      {layoutMode !== 'recommendations' && (
+        <>
+          {/* Search form */}
+          <div className="w-full max-w-[792px] mx-auto shrink-0 z-10 px-2 lg:px-0">
+            <form onSubmit={handleSearch} className="relative flex items-center w-full">
+              <input 
+                type="text"
+                placeholder="Search for karaoke songs..."
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                className="w-full bg-white border border-gray-300 rounded-full py-2.5 pl-11 pr-[110px] focus:outline-none focus:border-[#ff0000] text-[16px] text-black placeholder:text-gray-500 shadow-sm"
+              />
+              <Search className="absolute left-4 w-4 h-4 text-gray-400" />
+              {query && (
+                <button
+                  type="button"
+                  onClick={() => setQuery('')}
+                  className="absolute right-24 p-1 rounded-full text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
+              <button 
+                type="submit"
+                className="absolute right-2 top-1/2 -translate-y-1/2 py-1.5 px-4 bg-[#ff0000] text-white rounded-full font-bold text-xs uppercase tracking-wider hover:bg-[#cc0000] transition-colors flex items-center justify-center disabled:opacity-50"
+                disabled={isSearching}
               >
-                <div className="w-28 sm:w-32 h-18 sm:h-20 bg-black rounded-lg overflow-hidden shrink-0 relative">
-                  <img src={video.thumbnail} alt={video.title} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
-                  <div className="absolute bottom-1 right-1 bg-black/80 px-1 py-0.5 text-[10px] rounded text-white font-mono">
-                    {video.duration}
-                  </div>
-                </div>
-                
-                <div className="flex flex-col justify-center min-w-0 flex-1">
-                  <p className={`text-xs sm:text-sm font-bold truncate transition-colors ${
-                    addingMap[video.videoId] === 'success' ? 'text-green-800' : 'text-black'
-                  }`} title={video.title}>
-                    {video.title}
-                  </p>
-                  <p className="text-[10px] text-gray-500 truncate mb-1">
-                    {video.channel}
-                  </p>
-                  <button 
-                    onClick={(e) => { e.stopPropagation(); handleAdd(video); }}
-                    disabled={addingMap[video.videoId] === 'loading' || addingMap[video.videoId] === 'success'}
-                    className={`mt-auto px-3 py-1 font-bold text-[10px] uppercase tracking-wider rounded-lg self-start transition-colors ${
+                {isSearching ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Search'}
+              </button>
+            </form>
+          </div>
+
+          {/* Dynamic Results Header */}
+          {results.length > 0 && (
+            <div className="flex items-center justify-between mb-4 mt-4 shrink-0 max-w-[792px] mx-auto w-full px-2 lg:px-0">
+              <span className="text-[10px] text-gray-500 font-mono font-medium bg-gray-100 px-2.5 py-1 rounded-full">
+                {results.length} tracks matched
+              </span>
+              <button
+                type="button"
+                onClick={() => { setResults([]); setQuery(''); }}
+                className="flex items-center gap-1.5 p-1.5 pr-2 rounded-full hover:bg-gray-100 text-gray-500 transition-colors"
+              >
+                <X className="w-4 h-4" />
+                <span className="text-[10px] font-bold uppercase tracking-wider">Close</span>
+              </button>
+            </div>
+          )}
+
+          <div className="flex-1 flex flex-col pr-1 overflow-y-auto custom-scrollbar">
+            {/* Searched Results List */}
+            {results.length > 0 && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pb-6 border-b border-gray-150 mb-8">
+                {results.map((video) => (
+                  <div 
+                    key={video.videoId} 
+                    className={`flex gap-3 p-2 rounded-xl border transition-all cursor-pointer group ${
                       addingMap[video.videoId] === 'success'
-                        ? 'bg-green-600 text-white cursor-default'
-                        : addingMap[video.videoId] === 'loading'
-                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                        : 'bg-[#ff0000] text-white hover:bg-[#cc0000]'
-                    }`}
+                        ? 'bg-green-50 border-green-300 hover:border-green-400'
+                        : 'bg-gray-50 border-gray-200 hover:border-[#ff0000]/50'
+                    }`} 
+                    onClick={() => handleAdd(video)}
                   >
-                    {addingMap[video.videoId] === 'success' ? (
-                      '✓ Added'
-                    ) : addingMap[video.videoId] === 'loading' ? (
-                      <span className="flex items-center gap-1">
-                        <Loader2 className="w-3 h-3 animate-spin" /> Adding...
-                      </span>
-                    ) : (
-                      '+ Add'
-                    )}
-                  </button>
-                </div>
+                    <div className="w-28 sm:w-32 h-18 sm:h-20 bg-black rounded-lg overflow-hidden shrink-0 relative">
+                      <img src={video.thumbnail} alt={video.title} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
+                      <div className="absolute bottom-1 right-1 bg-black/80 px-1 py-0.5 text-[10px] rounded text-white font-mono">
+                        {video.duration}
+                      </div>
+                    </div>
+                    
+                    <div className="flex flex-col justify-center min-w-0 flex-1">
+                      <p className={`text-xs sm:text-sm font-bold truncate transition-colors ${
+                        addingMap[video.videoId] === 'success' ? 'text-green-800' : 'text-black'
+                      }`} title={video.title}>
+                        {video.title}
+                      </p>
+                      <p className="text-[10px] text-gray-500 truncate mb-1">
+                        {video.channel}
+                      </p>
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); handleAdd(video); }}
+                        disabled={addingMap[video.videoId] === 'loading' || addingMap[video.videoId] === 'success'}
+                        className={`mt-auto px-3 py-1 font-bold text-[10px] uppercase tracking-wider rounded-lg self-start transition-colors ${
+                          addingMap[video.videoId] === 'success'
+                            ? 'bg-green-600 text-white cursor-default'
+                            : addingMap[video.videoId] === 'loading'
+                            ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                            : 'bg-[#ff0000] text-white hover:bg-[#cc0000]'
+                        }`}
+                      >
+                        {addingMap[video.videoId] === 'success' ? (
+                          '✓ Added'
+                        ) : addingMap[video.videoId] === 'loading' ? (
+                          <span className="flex items-center gap-1">
+                            <Loader2 className="w-3 h-3 animate-spin" /> Adding...
+                          </span>
+                        ) : (
+                          '+ Add'
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-        )}
+            )}
 
-        {results.length === 0 && !isSearching && query && (
-          <div className="text-center py-8 text-gray-400 text-sm border-b border-gray-150 mb-8">
-            No search results found. Try another search or explore categories below.
+            {results.length === 0 && !isSearching && query && (
+              <div className="text-center py-8 text-gray-400 text-sm border-b border-gray-150 mb-8 px-4">
+                No results found. Try another search or explore categories below.
+              </div>
+            )}
           </div>
-        )}
+        </>
+      )}
 
-        {/* Categories of Genres Section */}
+      {layoutMode !== 'search' && (
+        <div className="flex-1 flex flex-col px-[14px] overflow-y-auto custom-scrollbar">
+          {/* Categories of Genres Section */}
         <div className="flex flex-col gap-4 mt-2">
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
             <div>
@@ -331,7 +360,8 @@ export default function SongSearch({ roomId }: { roomId: string }) {
             </motion.div>
           )}
         </div>
-      </div>
+        </div>
+      )}
     </div>
   );
 }
